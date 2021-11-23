@@ -51,16 +51,16 @@ passport.use(
 				page_access_token: "",
 			};
 
-			const AccountsPages = await axios.get(
+			const AccountPage = await axios.get(
 				process.env.GP_URL +
 				"me/accounts?access_token=" +
 				accessToken
-			);
-			//TODO : curr -Only works for single page of an auth user exten to multiple
-			curr_user.page_access_token =
-				AccountsPages.data[0].accessToken;
+			)
 
-			return done(null, user);
+			curr_user.page_access_token = AccountPage.data.data[0].access_token
+			//TODO : curr -Only works for single page of an auth user exten to multiple
+
+			return done(null, curr_user);
 		}
 	)
 );

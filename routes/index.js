@@ -2,7 +2,7 @@ var express = require("express");
 var router = express.Router();
 const passport = require("passport");
 
-const { isLoggedIn } = require("../helper/helper");
+const {isLoggedIn} = require("../helper/helper");
 
 const {
 	PassportAuthentication,
@@ -35,7 +35,7 @@ router.get(
 router.get(
 	"/auth/facebook/callback",
 	passport.authenticate("facebook", {
-		successRedirect: "/backend",
+		successRedirect: "/backend/AgentDetails",
 		failureRedirect: "/error",
 	})
 );

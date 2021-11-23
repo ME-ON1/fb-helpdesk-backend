@@ -9,12 +9,12 @@ exports.AgentDetails = async (req, res, next) => {
 
 	const page_details = await axios.get(
 		process.env.GP_URL +
-		"me?fields=name,id,profile_pic,link,email?access_token=" +
+		"me?fields=name,id,link&access_token=" +
 		page_access_token
 	);
 
 	return res.status(200).json({
-		data: page_details.data,
+		data: page_details
 	});
 };
 
@@ -41,6 +41,7 @@ exports.MsgPulseHdl = async (req, res, next) => {
 
 const getEmit = async (socket, page_access_token) => {
 	const rs = await axios.get(process.env.GP_URL + "/me/messages?access_token=" + page_access_token)
+
 
 	socket.emit('msg-pulse', rs.data)
 
