@@ -32,10 +32,19 @@ const UserSchema = mongoose.Schema({
 		type: String,
 		require: true,
 	},
+	id: {
+		type: String,
+	},
 	last_name: {
 		require: true,
+		type: String,
 	},
-	accessToken: {
+	access_token: {
+		get: decrypt,
+		set: encrypt,
+		type: String,
+	},
+	page_access_token: {
 		get: decrypt,
 		set: encrypt,
 		type: String,
@@ -48,6 +57,6 @@ const UserSchema = mongoose.Schema({
 	},
 });
 
-const User = mongoose.Model("User", UserSchema);
+const User = mongoose.model("User", UserSchema);
 
-exports.User;
+module.exports = User;

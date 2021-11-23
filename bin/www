@@ -7,6 +7,11 @@
 var app = require('../app');
 var debug = require('debug')('fb-desk-backend:server');
 var http = require('http');
+const mongoose = require("mongoose")
+const socket = require("socket.io")
+
+
+
 
 /**
  * Get port from environment and store in Express.
@@ -20,14 +25,21 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
-
 /**
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
+server.listen(port, () => {
+	console.log("server is listening")
+});
 server.on('error', onError);
 server.on('listening', onListening);
+const io = socket(server, {cors: {origin: '*'}})
+
+app.set('socketio', io)
+const dbConnection = mongoose.connection;
+dbConnection.on("error", (err) => console.log(`Connection error ${err}`));
+dbConnection.once("open", () => console.log("Connected to DB!"));
 
 /**
  * Normalize a port into a number, string, or false.
