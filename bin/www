@@ -8,8 +8,9 @@ var app = require('../app');
 var debug = require('debug')('fb-desk-backend:server');
 var http = require('http');
 const mongoose = require("mongoose")
-const socket = require("socket.io")
-
+const socket = require("socket.io");
+const {removeAllListeners} = require('cluster');
+const axios = require("axios")
 
 
 
@@ -40,6 +41,46 @@ app.set('socketio', io)
 const dbConnection = mongoose.connection;
 dbConnection.on("error", (err) => console.log(`Connection error ${err}`));
 dbConnection.once("open", () => console.log("Connected to DB!"));
+
+let interval
+io.on('connection', (socket) => {
+	console.log('connection initiateted')
+	if (interval) {
+		clearInterval(interval)
+	}
+
+	interval = setInterval(() => getEmit(socket), 1000)
+
+	socket.on('disconnect', data => {
+		clearInterval(interval)
+	})
+
+})
+
+
+const getEmit = (socket) => {
+	axios.get("https://graph.facebook.com/v12.0/me/posts?fields=id,message,from,created_time,comments{parent,from, created_time}&access_token=EAAMvtoHFBy4BAIKyGoW0l7vYuGpp7OBHgbLimIxBk3JQKZBQsBhSpq3rVZCQkEbMZCNZBdMkTKBHzo0ueczIK2yWVHDADkZApq2rUwhoQy27lYRxlP5HQDuQPGzPBFQ2fFgpJKux5pmQImGBITOuYZBCuNrkO8ARHHwbDTtNUqH1CvWQvjGcZCTxZCw6EI3yH7JA76K6155Uj47gV7FJ6Ix2").then(res => {
+		console.log("res", res.data)
+		socket.emit('msg-pulse', res.data)
+	})
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Normalize a port into a number, string, or false.

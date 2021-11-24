@@ -1,5 +1,4 @@
 require("dotenv").config();
-var createError = require("http-errors");
 var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
@@ -27,7 +26,13 @@ app.use(
 
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(cors());
+app.use(
+	cors({
+		origin: "http://localhost:3000", // allow to server to accept request from different origin
+		methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+		credentials: true // allow session cookie from browser to pass through
+	})
+);
 passport.serializeUser(function (user, cb) {
 	cb(null, user);
 });
@@ -51,16 +56,40 @@ passport.use(
 				page_access_token: "",
 			};
 
+
 			const AccountPage = await axios.get(
 				process.env.GP_URL +
-				"me/accounts?access_token=" +
+				"me?fields={email,gender,link,accounts,picture}&access_token=" +
 				accessToken
 			)
 
+			// get the latest page_access_token
 			curr_user.page_access_token = AccountPage.data.data[0].access_token
+			curr_user.picture = AccountPage.data.data.picutre.data
+			curr_user.profile_link = AccountPage.data.data.link
+			curr_user.email = AccountPage.data.data.email
+			curr_user.gender = AccountPage.data.data.gender
+
+
+
+			const CurrUser = await User.findOne({email: curr_user.id})
+
+			if (!CurrUser) {
+
+				const user = new User(curr_user)
+
+				await user.save()
+				return done(null, curr_user);
+			}
+			else {
+				//update page_access_token its volatile
+				CurrUser.page_access_token = AccountPage.curr_user.page_access_token
+				await CurrUser.save()
+				return done(null, CurrUser)
+			}
+
 			//TODO : curr -Only works for single page of an auth user exten to multiple
 
-			return done(null, curr_user);
 		}
 	)
 );
@@ -89,7 +118,6 @@ app.use(function (err, req, res, next) {
 
 	// render the error page
 	res.status(err.status || 500);
-	res.render("error");
 });
 
 module.exports = app;

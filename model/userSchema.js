@@ -27,16 +27,38 @@ function decrypt(text) {
 	return dec;
 }
 
-const UserSchema = mongoose.Schema({
+const PictureSchema = new mongoose.Schema({
+	height: {
+		type: Number,
+		required: true
+	},
+	url: {
+		type: String,
+		required: true
+	},
+	width: {
+		type: Number,
+		required: true
+	},
+	is_silhouette: {
+		type: Boolean
+	}
+
+})
+const AgentSchema = mongoose.Schema({
 	first_name: {
 		type: String,
-		require: true,
+		required: true,
+	},
+	email: {
+		type: String,
+		required: true
 	},
 	id: {
 		type: String,
 	},
 	last_name: {
-		require: true,
+		required: true,
 		type: String,
 	},
 	access_token: {
@@ -55,8 +77,16 @@ const UserSchema = mongoose.Schema({
 	gender: {
 		type: String,
 	},
+	picture: {
+		type: PictureSchema,
+		required: true
+	}
+}, {
+	timestamps: true
 });
 
-const User = mongoose.model("User", UserSchema);
+
+
+const User = mongoose.model("User", AgentSchema);
 
 module.exports = User;

@@ -7,11 +7,11 @@ exports.CustomerDetails = async (req, res, next) => {
 exports.AgentDetails = async (req, res, next) => {
 	const {page_access_token, access_token} = req.user;
 
-	const page_details = await axios.get(
-		process.env.GP_URL +
-		"me?fields=name,id,link&access_token=" +
-		page_access_token
-	);
+	const page_details = {} /*await axios.get(*/
+	/*process.env.GP_URL +*/
+	/*"me?fields=name,id,link&access_token=" +*/
+	/*page_access_token*/
+	/*);*/
 
 	return res.status(200).json({
 		data: page_details
@@ -31,7 +31,6 @@ exports.MsgPulseHdl = async (req, res, next) => {
 			socket.on('disconnect', "ended")
 		}
 		interval = setInterval(() => getEmit((socket, page_access_token), 1000))
-
 		socket.on('pulse', user_data => {
 			console.log("just got a msg here ")
 
@@ -40,9 +39,8 @@ exports.MsgPulseHdl = async (req, res, next) => {
 }
 
 const getEmit = async (socket, page_access_token) => {
-	const rs = await axios.get(process.env.GP_URL + "/me/messages?access_token=" + page_access_token)
+	const rs = await axios.get(process.env.GP_URL + "/me/accounts?access_token=" + page_access_token)
 
 
 	socket.emit('msg-pulse', rs.data)
-
 }
