@@ -138,7 +138,7 @@ const server = http.createServer(app)
 const io = SocketIO(server, {cors: {origin: '*'}})
 
 
-app.listen(8050, () => {
+app.listen(process.env.PORT, () => {
 	console.log("Server IS listenting")
 	mongoose.connect(process.env.DB_URL, () => {
 		console.log("DB connected !!")
