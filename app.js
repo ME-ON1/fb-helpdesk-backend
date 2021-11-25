@@ -5,17 +5,17 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var session = require("express-session");
 const passport = require("passport");
+const http = require("http")
 var FbStrategy = require("passport-facebook").Strategy;
 const mongoose = require("mongoose");
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 const User = require("./model/userSchema");
-var app = express();
 const axios = require("axios");
 const cors = require("cors")
+const SocketIO = require("socket.io")
 
-
-
+var app = express();
 app.use(
 	session({
 		resave: false,
@@ -46,9 +46,10 @@ passport.use(
 		{
 			clientID: process.env.CLIENT_ID,
 			clientSecret: process.env.SECRET,
-			callbackURL: process.env.CB_URL,
+			callbackURL: "/facebook/redirect",
 		},
 		async (accessToken, refreshToken, profile, done) => {
+
 			const curr_user = {
 				first_name: profile._json.name,
 				id: profile._json.id,
@@ -56,36 +57,47 @@ passport.use(
 				page_access_token: "",
 			};
 
+			console.log(accessToken)
+			try {
+				const AccountPage = await axios.get(
+					process.env.GP_URL +
+					"me?fields={email,gender,link,accounts,picture}&access_token=" +
+					accessToken
+				)
 
-			const AccountPage = await axios.get(
-				process.env.GP_URL +
-				"me?fields={email,gender,link,accounts,picture}&access_token=" +
-				accessToken
-			)
+				// get the latest page_access_token
+				curr_user.page_access_token = AccountPage.data.data[0].access_token
+				console.log(AccountPage.data)
+			} catch (err) {
+				throw new Error(err)
+			}
 
-			// get the latest page_access_token
-			curr_user.page_access_token = AccountPage.data.data[0].access_token
-			curr_user.picture = AccountPage.data.data.picutre.data
+			return done(null, curr_user)
 			curr_user.profile_link = AccountPage.data.data.link
 			curr_user.email = AccountPage.data.data.email
 			curr_user.gender = AccountPage.data.data.gender
 
+			try {
+
+				const CurrUser = await User.findOne({email: curr_user.id})
+
+				if (!CurrUser) {
+
+					const user = new User(curr_user)
+
+					await user.save()
+					return done(null, curr_user);
+				}
+				else {
+					//update page_access_token its volatile
+					CurrUser.page_access_token = AccountPage.curr_user.page_access_token
+					await CurrUser.save()
+					return done(null, CurrUser)
+				}
 
 
-			const CurrUser = await User.findOne({email: curr_user.id})
-
-			if (!CurrUser) {
-
-				const user = new User(curr_user)
-
-				await user.save()
-				return done(null, curr_user);
-			}
-			else {
-				//update page_access_token its volatile
-				CurrUser.page_access_token = AccountPage.curr_user.page_access_token
-				await CurrUser.save()
-				return done(null, CurrUser)
+			} catch (Err) {
+				throw new Error(Err)
 			}
 
 			//TODO : curr -Only works for single page of an auth user exten to multiple
@@ -105,6 +117,9 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/backend", usersRouter);
+require('./routes/webhook.js')(app);
+
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
 	next(createError(404));
@@ -119,5 +134,13 @@ app.use(function (err, req, res, next) {
 	// render the error page
 	res.status(err.status || 500);
 });
+const server = http.createServer(app)
+const io = SocketIO(server, {cors: {origin: '*'}})
 
-module.exports = app;
+
+app.listen(8050, () => {
+	console.log("Server IS listenting")
+	mongoose.connect(process.env.DB_URL, () => {
+		console.log("DB connected !!")
+	})
+})

@@ -4,18 +4,21 @@ const passport = require("passport");
 const axios = require("axios")
 const {isLoggedIn} = require("../helper/helper");
 
-const {
-	PassportAuthentication,
-	LogOut,
-	AuthRedirect,
-	ProfileHdl,
-	LogInPageRenderHdl,
-	errorHdl,
-} = require("../controllers/auth");
+const CLIENT_REDIRECT_URL = "http://localhost:3000"
 
-router.get("/", LogInPageRenderHdl);
-router.get("/profile", isLoggedIn, ProfileHdl);
-router.get("/error", isLoggedIn, errorHdl);
+
+//const {
+//PassportAuthentication,
+//LogOut,
+//AuthRedirect,
+//ProfileHdl,
+//LogInPageRenderHdl,
+//errorHdl,
+//} = require("../controllers/auth");
+
+//router.get("/", LogInPageRenderHdl);
+//router.get("/profile", isLoggedIn, ProfileHdl);
+//router.get("/error", isLoggedIn, errorHdl);
 //router.get(
 //"/auth/facebook",
 //passport.authenticate("facebook",)
@@ -39,13 +42,14 @@ router.get(
 
 router.get(
 	"/facebook/redirect",
-	passport.authenticate("twitter", {
-		successRedirect: process.env.CB_URL,
-		failureRedirect: "/auth/login/failed"
+	passport.authenticate("facebook", {
+		successRedirect: CLIENT_REDIRECT_URL,
+		failureRedirect: "/login/failed",
 	})
 );
 
-router.get("/auth/facebook/success", async (req, res, next) => {
+router.get("/login/success", async (req, res, next) => {
+	console.log(req.user)
 	if (req.user) {
 		res.json({
 			success: true,
@@ -54,10 +58,15 @@ router.get("/auth/facebook/success", async (req, res, next) => {
 			cookies: req.cookies
 		})
 	}
+	else {
+		res.json({
+			success: false
+		})
+	}
 })
 
 
-router.get("/auth/login/failed", (req, res, next) => {
+router.get("/login/failed", (req, res, next) => {
 	res.status(401).json({
 		success: false,
 		message: "user failed "
@@ -69,3 +78,5 @@ router.get("/logout", async (req, res, next) => {
 	req.redirect("http://localhost:8089")
 });
 
+
+module.exports = router
