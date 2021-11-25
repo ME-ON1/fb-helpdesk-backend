@@ -7,16 +7,14 @@ const {isLoggedIn} = require("../helper/helper");
 const CLIENT_REDIRECT_URL = "http://localhost:3000"
 
 
-//const {
-//PassportAuthentication,
-//LogOut,
-//AuthRedirect,
-//ProfileHdl,
-//LogInPageRenderHdl,
-//errorHdl,
-//} = require("../controllers/auth");
+const {
+	LogInPageRenderHdl,
+	errorHdl,
+} = require("../controllers/auth");
 
-//router.get("/", LogInPageRenderHdl);
+
+router.get("/", LogInPageRenderHdl);
+
 //router.get("/profile", isLoggedIn, ProfileHdl);
 //router.get("/error", isLoggedIn, errorHdl);
 //router.get(

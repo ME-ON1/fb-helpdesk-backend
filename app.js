@@ -26,13 +26,32 @@ app.use(
 
 app.use(passport.initialize());
 app.use(passport.session());
+const whitelist = ["http://localhost:3000", "https://damp-castle-69501.herokuapp.com"]
+//var corsOptions = {
+//origin: function (origin, callback) {
+//if (whitelist.indexOf(origin) !== -1) {
+//callback(null, true);
+//} else {
+//callback(new Error("Not allowed by CORS"));
+//}
+//},
+//methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+//credentials: true // allow session cookie from browser to pass through
+//};
 app.use(
 	cors({
-		origin: "http://localhost:3000", // allow to server to accept request from different origin
-		methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-		credentials: true // allow session cookie from browser to pass through
-	})
-);
+		origin: function (origin, callback) {
+			// bypass the requests with no origin (like curl requests, mobile apps, etc )
+			if (!origin) return callback(null, true);
+
+			if (whitelist.indexOf(origin) === -1) {
+				var msg = `This site ${origin} does not have an access. Only specific domains are allowed to access it.`;
+				return callback(new Error(msg), false);
+			}
+			return callback(null, true);
+		}
+	}
+	));
 passport.serializeUser(function (user, cb) {
 	cb(null, user);
 });
@@ -137,9 +156,10 @@ app.use(function (err, req, res, next) {
 const server = http.createServer(app)
 const io = SocketIO(server, {cors: {origin: '*'}})
 
+PORT = process.env.PORT || 8040
 
-app.listen(process.env.PORT, () => {
-	console.log("Server IS listenting")
+app.listen(PORT, () => {
+	console.log("Server IS listentingi on ", PORT)
 	mongoose.connect(process.env.DB_URL, () => {
 		console.log("DB connected !!")
 	})

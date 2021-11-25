@@ -1,3 +1,5 @@
 exports.authCheck = (req, res, next) => {
-	console.log("sdf")
+	res.render("profile.ejs", {
+		user: "tarun"
+	})
 }
