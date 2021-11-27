@@ -31,7 +31,7 @@ module.exports = function (app, chalk) {
 		}
 	});
 
-	app.post("/webhook/pages", async (req, res, next) => {
+	app.get("/webhook/pages", async (req, res, next) => {
 		if (req.query["hub.query_token"] == process.env.VERIFY_TOKEN) {
 			console.log("token verofy");
 			res.status(200).send(req.query["hub.challenge"]);
