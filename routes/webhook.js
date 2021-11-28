@@ -17,6 +17,8 @@ module.exports = function (app, chalk) {
 	});
 
 	app.post("/webhook", function (req, res) {
+		console.log("reaching her ")
+		console.log(req.protocol + '://' + req.get('host') + req.originalUrl, req.body, req.headers)
 		if (req.body.object === "page") {
 			req.body.entry.forEach(function (entry) {
 				entry.messaging.forEach(function (event) {
