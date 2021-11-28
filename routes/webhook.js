@@ -17,20 +17,16 @@ module.exports = function (app, chalk) {
 	});
 
 	app.post("/webhook", function (req, res) {
-		//if (req.body.object === "page") {
-		//req.body.entry.forEach(function (entry) {
-		//entry.messaging.forEach(function (event) {
-		//console.log(event);
-		//if (event.postback) {
-		//processPostback(event);
-		//} else if (event.message) {
-		//processMessage(event);
-		//}
-		//});
-		//});
-		console.log(req.body)
-		res.sendStatus(200);
-		//}
+		if (req.body.object === "page") {
+			req.body.entry.forEach(function (entry) {
+				entry.messaging.forEach(function (event) {
+					console.log(event);
+
+				});
+			});
+			console.log(req.body)
+			res.sendStatus(200);
+		}
 	});
 
 	app.get("/webhook/pages", async (req, res, next) => {
